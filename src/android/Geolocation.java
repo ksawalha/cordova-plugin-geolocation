@@ -1,6 +1,8 @@
 package org.apache.cordova.geolocation;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.Manifest;
@@ -34,12 +36,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+
 public class Geolocation extends CordovaPlugin implements OnLocationResultEventListener {
 
     private SparseArray<LocationContext> locationContexts;
     private FusedLocationProviderClient fusedLocationClient;
 
-    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+    private static HashMap<Integer, CompletableFuture<Integer>> completableFutureMap = new HashMap<>();
+    private static int requestCodeCounter = 100;
 
     public static final String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
 
@@ -281,13 +287,29 @@ public class Geolocation extends CordovaPlugin implements OnLocationResultEventL
                     // Location settings are not satisfied, but this can be fixed
                     // by showing the user a dialog.
                     try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult(). We should do this but it is not working
-                        // so for now we simply call for location updates directly, after presenting the dialog
+                        // to get the response for the resolution in onActivityResult
+                        cordova.setActivityResultCallback(Geolocation.this);
+
+                        // use CompletableFuture to get callback from calling startResolutionForResult
+                        int requestCode = requestCodeCounter++;
+                        CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+                        completableFutureMap.put(requestCode, completableFuture);
+
+                        completableFuture.thenAccept(resolvableResult -> {
+                            if (resolvableResult == Activity.RESULT_OK) {
+                                requestLocationUpdates(locationContext, request);
+                            } else {
+                                PluginResult errorResult = new PluginResult(PluginResult.Status.ERROR, LocationError.LOCATION_ENABLE_REQUEST_DENIED.toJSON());
+                                locationContext.getCallbackContext().sendPluginResult(errorResult);
+                                locationContexts.delete(locationContext.getId());
+                            }
+                        });
+
+                        // Show the dialog to enable location by calling startResolutionForResult(),
+                        // and then handle the result in onActivityResult
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(cordova.getActivity(),
-                                REQUEST_CHECK_SETTINGS);
-                        requestLocationUpdates(locationContext, request);
+                        resolvable.startResolutionForResult(cordova.getActivity(), requestCode);
+
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
                     }
@@ -303,4 +325,17 @@ public class Geolocation extends CordovaPlugin implements OnLocationResultEventL
         task.addOnSuccessListener(checkLocationSettingsOnSuccess);
         task.addOnFailureListener(checkLocationSettingsOnFailure);
     }
+
+    /**
+     * Used to handle the result of 'ResolvableApiException.startResolutionForResult'
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        CompletableFuture<Integer> completableFuture = completableFutureMap.remove(requestCode);
+        if (completableFuture != null) {
+            completableFuture.complete(resultCode);
+        }
+    }
+
 }

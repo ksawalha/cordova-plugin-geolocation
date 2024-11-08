@@ -104,15 +104,15 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <!-- Usage description of the Location for iOS 6+, mandatory since iOS 10 -->
         <preference name="LOCATION_WHENINUSE_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSLocationWhenInUseUsageDescription">
-            <string>Access to your location is required to show you location on the map.</string>
+            <string>Location access allows us to display your position on the map. Your location data is never stored or shared.</string>
         </config-file>
         
         <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
-            <string>Access to your location is required to show you location on the map.</string>
+            <string>Location access allows us to display your position on the map. Your location data is never stored or shared.</string>
         </config-file>
         
         <config-file target="*-Info.plist" parent="NSLocationAlwaysAndWhenInUseUsageDescription">
-            <string>Access to your location is required to show you location on the map.</string>
+            <string>Location access allows us to display your position on the map. Your location data is never stored or shared.</string>
         </config-file>
       
 

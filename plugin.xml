@@ -110,6 +110,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
             <string>Access to your location is required to show you location on the map.</string>
         </config-file>
+        
+        <config-file target="*-Info.plist" parent="NSLocationAlwaysAndWhenInUseUsageDescription">
+            <string>Access to your location is required to show you location on the map.</string>
+        </config-file>
+      
 
         <header-file src="src/ios/CDVLocation.h" />
         <source-file src="src/ios/CDVLocation.m" />

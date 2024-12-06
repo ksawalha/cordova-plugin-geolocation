@@ -174,11 +174,7 @@
         
         [self isLocationServicesEnabledWithCompletion:^(BOOL enabled) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            if (!enabled) {
+            if (!strongSelf || !enabled) {
                 return;
             }
             
@@ -222,6 +218,9 @@
 
         [self isLocationServicesEnabledWithCompletion:^(BOOL enabled) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
             
             if (enabled == NO) {
                 NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
@@ -274,6 +273,9 @@
 
     [self isLocationServicesEnabledWithCompletion:^(BOOL enabled) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
         
         if (enabled == NO) {
             NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
@@ -281,11 +283,9 @@
             [posError setObject:@"Location services are disabled." forKey:@"message"];
             CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:posError];
             [strongSelf.commandDelegate sendPluginResult:result callbackId:callbackId];
-        } else {
-            if (!strongSelf->__locationStarted || (strongSelf->__highAccuracyEnabled != enableHighAccuracy)) {
-                // Tell the location manager to start notifying us of location updates
-                [strongSelf startLocation:enableHighAccuracy];
-            }
+        } else if (!strongSelf->__locationStarted || (strongSelf->__highAccuracyEnabled != enableHighAccuracy)) {
+            // Tell the location manager to start notifying us of location updates
+            [strongSelf startLocation:enableHighAccuracy];
         }
     }];
 }

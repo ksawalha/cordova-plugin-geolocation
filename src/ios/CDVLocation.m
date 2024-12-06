@@ -109,7 +109,7 @@
         }
         
         if (!enabled) {
-            [self returnLocationError:PERMISSIONDENIED withMessage:@"Location services are not enabled."];
+            [strongSelf returnLocationError:PERMISSIONDENIED withMessage:@"Location services are not enabled."];
             return;
         }
         

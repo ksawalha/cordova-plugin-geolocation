@@ -47,7 +47,6 @@ typedef NSUInteger CDVLocationStatus;
     @private BOOL __locationStarted;
     @private BOOL __highAccuracyEnabled;
     CDVLocationData* locationData;
-    dispatch_queue_t queue;
 }
 
 @property (nonatomic, strong) CLLocationManager* locationManager;
@@ -69,5 +68,4 @@ typedef NSUInteger CDVLocationStatus;
        didFailWithError:(NSError*)error;
 
 - (void)isLocationServicesEnabledWithCompletion:(void (^)(BOOL enabled))completion;
-//- (BOOL)isLocationServicesEnabled;
 @end

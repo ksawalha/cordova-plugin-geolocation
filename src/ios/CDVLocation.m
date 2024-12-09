@@ -51,7 +51,7 @@
 
 @implementation CDVLocation
 
-@synthesize locationManager, locationData, queue;
+@synthesize locationManager, locationData;
 
 - (void)pluginInitialize
 {
@@ -60,7 +60,6 @@
     __locationStarted = NO;
     __highAccuracyEnabled = NO;
     self.locationData = nil;
-    self.queue = dispatch_queue_create("com.outsystems.rd.LocationSampleApp.Queue", NULL);
 }
 
 - (BOOL)isAuthorized
@@ -82,6 +81,8 @@
 }
 
 - (void)isLocationServicesEnabledWithCompletion:(void (^)(BOOL enabled))completion {
+    dispatch_queue_t queue = dispatch_queue_create("com.outsystems.rd.LocationSampleApp.Queue", NULL);
+    
     dispatch_async(queue, ^{
         BOOL locationServicesEnabledClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(locationServicesEnabled)]; // iOS 4.x
         
@@ -91,9 +92,7 @@
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion) {
-                completion(result);
-            }
+            completion(result);
         });
     });
 }
@@ -223,11 +222,7 @@
             }
             
             if (enabled == NO) {
-                NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
-                [posError setObject:[NSNumber numberWithInt:PERMISSIONDENIED] forKey:@"code"];
-                [posError setObject:@"Location services are disabled." forKey:@"message"];
-                CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:posError];
-                [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+                [self returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
             } else {
                 if (!self.locationData) {
                     self.locationData = [[CDVLocationData alloc] init];
@@ -278,11 +273,7 @@
         }
         
         if (enabled == NO) {
-            NSMutableDictionary* posError = [NSMutableDictionary dictionaryWithCapacity:2];
-            [posError setObject:[NSNumber numberWithInt:PERMISSIONDENIED] forKey:@"code"];
-            [posError setObject:@"Location services are disabled." forKey:@"message"];
-            CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:posError];
-            [strongSelf.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [self returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
         } else if (!strongSelf->__locationStarted || (strongSelf->__highAccuracyEnabled != enableHighAccuracy)) {
             // Tell the location manager to start notifying us of location updates
             [strongSelf startLocation:enableHighAccuracy];

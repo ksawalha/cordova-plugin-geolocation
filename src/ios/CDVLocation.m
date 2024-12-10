@@ -68,11 +68,6 @@
 
     if (authorizationStatusClassPropertyAvailable) {
         NSUInteger authStatus = [CLLocationManager authorizationStatus];
-#ifdef __IPHONE_8_0
-        if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)]) {  //iOS 8.0+
-            return (authStatus == kCLAuthorizationStatusAuthorizedWhenInUse) || (authStatus == kCLAuthorizationStatusAuthorizedAlways) || (authStatus == kCLAuthorizationStatusNotDetermined);
-        }
-#endif
         return (authStatus == kCLAuthorizationStatusAuthorizedAlways) || (authStatus == kCLAuthorizationStatusNotDetermined);
     }
 
@@ -81,11 +76,14 @@
 }
 
 - (void)isLocationServicesEnabledWithCompletion:(void (^)(BOOL enabled))completion {
-    dispatch_queue_t queue = dispatch_queue_create("com.outsystems.rd.LocationSampleApp.Queue", NULL);
-    
-    dispatch_async(queue, ^{
+    if (!completion) {
+        return;
+    }
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL isEnabled = [CLLocationManager locationServicesEnabled];
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion([CLLocationManager locationServicesEnabled]);
+            completion(isEnabled);
         });
     });
 }

@@ -84,15 +84,8 @@
     dispatch_queue_t queue = dispatch_queue_create("com.outsystems.rd.LocationSampleApp.Queue", NULL);
     
     dispatch_async(queue, ^{
-        BOOL locationServicesEnabledClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(locationServicesEnabled)]; // iOS 4.x
-        
-        BOOL result = NO;
-        if (locationServicesEnabledClassPropertyAvailable) { // iOS 4.x
-            result = [CLLocationManager locationServicesEnabled];
-        }
-        
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(result);
+            completion([CLLocationManager locationServicesEnabled]);
         });
     });
 }
@@ -129,21 +122,6 @@
 
             return;
         }
-
-    #ifdef __IPHONE_8_0
-        NSUInteger code = [CLLocationManager authorizationStatus];
-        if (code == kCLAuthorizationStatusNotDetermined && ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] || [strongSelf.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])) { //iOS8+
-            strongSelf->__highAccuracyEnabled = enableHighAccuracy;
-            if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationWhenInUseUsageDescription"]){
-                [strongSelf.locationManager requestWhenInUseAuthorization];
-            } else if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"]) {
-                [strongSelf.locationManager  requestAlwaysAuthorization];
-            } else {
-                NSLog(@"[Warning] No NSLocationAlwaysUsageDescription or NSLocationWhenInUseUsageDescription key is defined in the Info.plist file.");
-            }
-            return;
-        }
-    #endif
 
         // Tell the location manager to start notifying us of location updates. We
         // first stop, and then start the updating to ensure we get at least one
@@ -222,10 +200,10 @@
             }
             
             if (enabled == NO) {
-                [self returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
+                [strongSelf returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
             } else {
-                if (!self.locationData) {
-                    self.locationData = [[CDVLocationData alloc] init];
+                if (!strongSelf.locationData) {
+                    strongSelf.locationData = [[CDVLocationData alloc] init];
                 }
                 CDVLocationData* lData = self.locationData;
                 if (!lData.locationCallbacks) {
@@ -273,7 +251,7 @@
         }
         
         if (enabled == NO) {
-            [self returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
+            [strongSelf returnLocationError:PERMISSIONDENIED withMessage:@"Location services are disabled."];
         } else if (!strongSelf->__locationStarted || (strongSelf->__highAccuracyEnabled != enableHighAccuracy)) {
             // Tell the location manager to start notifying us of location updates
             [strongSelf startLocation:enableHighAccuracy];

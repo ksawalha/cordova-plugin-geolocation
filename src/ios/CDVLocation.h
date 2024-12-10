@@ -51,7 +51,6 @@ typedef NSUInteger CDVLocationStatus;
 
 @property (nonatomic, strong) CLLocationManager* locationManager;
 @property (nonatomic, strong) CDVLocationData* locationData;
-@property (nonatomic, strong) dispatch_queue_t queue;
 
 - (void)getLocation:(CDVInvokedUrlCommand*)command;
 - (void)addWatch:(CDVInvokedUrlCommand*)command;

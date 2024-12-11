@@ -64,20 +64,10 @@
 
 - (BOOL)isAuthorized
 {
-    BOOL authorizationStatusClassPropertyAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
-
-    if (authorizationStatusClassPropertyAvailable) {
-        NSUInteger authStatus = [CLLocationManager authorizationStatus];
-#ifdef __IPHONE_8_0
-        if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)]) {  //iOS 8.0+
-            return (authStatus == kCLAuthorizationStatusAuthorizedWhenInUse) || (authStatus == kCLAuthorizationStatusAuthorizedAlways) || (authStatus == kCLAuthorizationStatusNotDetermined);
-        }
-#endif
-        return (authStatus == kCLAuthorizationStatusAuthorizedAlways) || (authStatus == kCLAuthorizationStatusNotDetermined);
-    }
-
-    // by default, assume YES (for iOS < 4.2)
-    return YES;
+    NSUInteger authStatus = [self.locationManager authorizationStatus];
+    return (authStatus == kCLAuthorizationStatusAuthorizedWhenInUse) ||
+           (authStatus == kCLAuthorizationStatusAuthorizedAlways) ||
+           (authStatus == kCLAuthorizationStatusNotDetermined);
 }
 
 - (void)isLocationServicesEnabledWithCompletion:(void (^)(BOOL enabled))completion {
@@ -112,7 +102,7 @@
             NSString* message = nil;
             BOOL authStatusAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
             if (authStatusAvailable) {
-                NSUInteger code = [CLLocationManager authorizationStatus];
+                NSUInteger code = [self.locationManager authorizationStatus];;
                 if (code == kCLAuthorizationStatusNotDetermined) {
                     // could return POSITION_UNAVAILABLE but need to coordinate with other platforms
                     message = @"User undecided on application's use of location services.";
@@ -126,20 +116,19 @@
             return;
         }
         
-#ifdef __IPHONE_8_0
-    NSUInteger code = [CLLocationManager authorizationStatus];
-    if (code == kCLAuthorizationStatusNotDetermined && ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] || [self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])) { //iOS8+
-        __highAccuracyEnabled = enableHighAccuracy;
-        if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationWhenInUseUsageDescription"]){
-            [self.locationManager requestWhenInUseAuthorization];
-        } else if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"]) {
-            [self.locationManager  requestAlwaysAuthorization];
-        } else {
-            NSLog(@"[Warning] No NSLocationAlwaysUsageDescription or NSLocationWhenInUseUsageDescription key is defined in the Info.plist file.");
+        NSUInteger code = [self.locationManager authorizationStatus];
+        
+        if (code == kCLAuthorizationStatusNotDetermined && ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] || [self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])) { //iOS8+
+            strongSelf->__highAccuracyEnabled = enableHighAccuracy;
+            if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationWhenInUseUsageDescription"]){
+                [strongSelf.locationManager requestWhenInUseAuthorization];
+            } else if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"]) {
+                [strongSelf.locationManager  requestAlwaysAuthorization];
+            } else {
+                NSLog(@"[Warning] No NSLocationAlwaysUsageDescription or NSLocationWhenInUseUsageDescription key is defined in the Info.plist file.");
+            }
+            return;
         }
-        return;
-    }
-#endif
 
         // Tell the location manager to start notifying us of location updates. We
         // first stop, and then start the updating to ensure we get at least one

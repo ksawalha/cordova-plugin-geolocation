@@ -116,9 +116,9 @@
             return;
         }
         
-        NSUInteger code = [self.locationManager authorizationStatus];
+        NSUInteger code = [strongSelf.locationManager authorizationStatus];
         
-        if (code == kCLAuthorizationStatusNotDetermined && ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] || [self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])) { //iOS8+
+        if (code == kCLAuthorizationStatusNotDetermined ) {
             strongSelf->__highAccuracyEnabled = enableHighAccuracy;
             if([[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationWhenInUseUsageDescription"]){
                 [strongSelf.locationManager requestWhenInUseAuthorization];

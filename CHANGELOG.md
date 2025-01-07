@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1-OS14]
+### Fixes
+- Fix on iOS to check if location services are enabled [RMET-3577](https://outsystemsrd.atlassian.net/browse/RMET-3577)
+
+## [4.0.1-OS13]
+### Fixes
+- Fix on Android to stop location updates when watch times out quickly [RMET-2621](https://outsystemsrd.atlassian.net/browse/RMET-2621)
+
 ## [4.0.1-OS12]
 ### Fixes
 - Fix on Android to return an error if the user denies to enable the location when prompted by the plugin [RMET-3539](https://outsystemsrd.atlassian.net/browse/RMET-3539)
